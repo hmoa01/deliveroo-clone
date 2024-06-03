@@ -1,10 +1,12 @@
 import { View, StyleSheet, TouchableOpacity, Image, Text } from "react-native";
-import React from "react";
+import React, { useRef } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
 import { Link } from "expo-router";
 import { TextInput } from "react-native-gesture-handler";
+import BottomSheet from "./BottomSheet";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 
 const SearchBar = () => (
   <View style={styles.searchContainer}>
@@ -31,20 +33,22 @@ const SearchBar = () => (
 );
 
 const CustomHeader = () => {
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const openModal = () => {
+    bottomSheetRef.current?.present();
+  };
   return (
     <SafeAreaView style={styles.safeArea}>
+      <BottomSheet ref={bottomSheetRef} />
       <View style={styles.container}>
-        <TouchableOpacity onPress={() => console.log("press")}>
+        <TouchableOpacity onPress={openModal}>
           <Image
             source={require("@/assets/images/bike.png")}
             style={styles.bike}
           />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => console.log("press")}
-          style={styles.titleContainer}
-        >
+        <TouchableOpacity onPress={openModal} style={styles.titleContainer}>
           <Text style={styles.title}>Deliovery - Now</Text>
           <View style={styles.locationName}>
             <Text style={styles.subtitle}>London</Text>
