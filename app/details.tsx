@@ -6,17 +6,34 @@ import {
   TouchableOpacity,
   SectionList,
   ListRenderItem,
+  ScrollView,
 } from "react-native";
-import React, { useLayoutEffect } from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import Colors from "@/constants/Colors";
 // import { restaurants } from "@/assets/data/home";
 import { Link, useNavigation } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { restaurant } from "@/assets/data/restaurant";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 const details = () => {
   const navigation = useNavigation();
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const opacity = useSharedValue(0);
+  const animatedStyles = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+    };
+  });
+
+  const scrollRef = useRef<ScrollView>(null);
+  const itemsRef = useRef<TouchableOpacity[]>([]);
 
   const DATA = restaurant.food.map((item, index) => ({
     title: item.category,
@@ -51,6 +68,28 @@ const details = () => {
     });
   }, []);
 
+  const selectCategory = (index: number) => {
+    const selected = itemsRef.current[index];
+    setActiveIndex(index);
+
+    selected.measure((x) => {
+      scrollRef.current?.scrollTo({
+        x: x - 16,
+        y: 0,
+        animated: true,
+      });
+    });
+  };
+
+  const onScroll = (event: any) => {
+    const y = event.nativeEvent.contentOffset.y;
+    if (y > 120) {
+      opacity.value = withTiming(1);
+    } else {
+      opacity.value = withTiming(0);
+    }
+  };
+
   const renderItem: ListRenderItem<any> = ({ item, index }) => (
     <Link href={"/"} asChild>
       <TouchableOpacity style={styles.item}>
@@ -63,9 +102,11 @@ const details = () => {
       </TouchableOpacity>
     </Link>
   );
+
   return (
     <>
       <ParallaxScrollView
+        scrollEvent={onScroll}
         backgroundColor="#fff"
         style={{ flex: 1 }}
         parallaxHeaderHeight={250}
@@ -90,7 +131,7 @@ const details = () => {
             {restaurant.delivery} ·{" "}
             {restaurant.tags.map(
               (tag, index) =>
-                `${tag} + ${index < restaurant.tags.length - 1 ? " · " : ""}`
+                `${tag}${index < restaurant.tags.length - 1 ? " · " : ""}`
             )}
           </Text>
           <Text style={styles.restaurantDescription}>{restaurant.about}</Text>
@@ -118,6 +159,39 @@ const details = () => {
           />
         </View>
       </ParallaxScrollView>
+      <Animated.View style={[styles.stickySegments, animatedStyles]}>
+        <View style={styles.segmentsShadow}>
+          <ScrollView
+            ref={scrollRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.segmentScrollView}
+          >
+            {restaurant.food.map((item, index) => (
+              <TouchableOpacity
+                ref={(ref) => ref && (itemsRef.current[index] = ref)}
+                onPress={() => selectCategory(index)}
+                style={
+                  activeIndex === index
+                    ? styles.segmentButtonActive
+                    : styles.segmentButton
+                }
+                key={index}
+              >
+                <Text
+                  style={
+                    activeIndex === index
+                      ? styles.segmentTextActive
+                      : styles.segmentText
+                  }
+                >
+                  {item.category}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </Animated.View>
     </>
   );
 };
@@ -163,7 +237,6 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 22,
     fontWeight: "bold",
-
     marginTop: 40,
     margin: 16,
   },
@@ -185,6 +258,56 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.mediumDark,
     paddingVertical: 4,
+  },
+  stickySegments: {
+    position: "absolute",
+    height: 40,
+    left: 0,
+    top: 100,
+    width: "100%",
+    backgroundColor: "#fff",
+    overflow: "hidden",
+    paddingBottom: 4,
+  },
+  segmentsShadow: {
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowRadius: 4,
+    shadowOpacity: 0.02,
+    elevation: 5,
+    width: "100%",
+    height: "100%",
+  },
+  segmentButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+    borderRadius: 15,
+  },
+  segmentButtonActive: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+    borderRadius: 15,
+  },
+  segmentText: {
+    fontSize: 16,
+    color: Colors.primary,
+  },
+  segmentTextActive: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  segmentScrollView: {
+    paddingHorizontal: 16,
+    alignItems: "center",
+    gap: 20,
+    paddingBottom: 4,
   },
 });
 
