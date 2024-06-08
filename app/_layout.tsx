@@ -70,6 +70,55 @@ export default function RootLayoutNav() {
             ),
           }}
         />
+        <Stack.Screen
+          name="(modal)/dish"
+          options={{
+            presentation: "modal",
+            animation:
+              Platform.OS == "android" ? "slide_from_bottom" : "default",
+            animationDuration: 500,
+            headerShown: false,
+            headerTransparent: true,
+            headerStyle: {
+              backgroundColor: Colors.lightGrey,
+            },
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={{
+                  backgroundColor: "#fff",
+                  borderRadius: 20,
+                  padding: 6,
+                }}
+              >
+                <Ionicons
+                  name="close-outline"
+                  size={28}
+                  color={Colors.primary}
+                />
+              </TouchableOpacity>
+            ),
+          }}
+        />
+        <Stack.Screen
+          name="basket"
+          options={{
+            headerTitle: "Basket",
+            headerTitleAlign: "center",
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={{
+                  backgroundColor: "#fff",
+                  borderRadius: 20,
+                  padding: 6,
+                }}
+              >
+                <Ionicons name="arrow-back" size={28} color={Colors.primary} />
+              </TouchableOpacity>
+            ),
+          }}
+        ></Stack.Screen>
       </Stack>
     </BottomSheetModalProvider>
   );

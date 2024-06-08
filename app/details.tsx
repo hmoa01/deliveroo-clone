@@ -7,6 +7,7 @@ import {
   SectionList,
   ListRenderItem,
   ScrollView,
+  SafeAreaView,
 } from "react-native";
 import React, { useLayoutEffect, useRef, useState } from "react";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
@@ -20,6 +21,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import useBasketStore from "@/store/basketStore";
 
 const details = () => {
   const navigation = useNavigation();
@@ -40,6 +42,8 @@ const details = () => {
     data: item.meals,
     index: index,
   }));
+
+  const { items, total } = useBasketStore();
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -91,7 +95,7 @@ const details = () => {
   };
 
   const renderItem: ListRenderItem<any> = ({ item, index }) => (
-    <Link href={"/"} asChild>
+    <Link href={{ pathname: "/(modal)/dish", params: { id: item.id } }} asChild>
       <TouchableOpacity style={styles.item}>
         <View style={{ flex: 1 }}>
           <Text style={styles.dish}>{item.name}</Text>
@@ -192,6 +196,21 @@ const details = () => {
           </ScrollView>
         </View>
       </Animated.View>
+
+      {/* FOOTER BASKET */}
+      {items > 0 && (
+        <View style={styles.footer}>
+          <SafeAreaView style={{ backgroundColor: "#fff" }}>
+            <Link href="/basket" asChild>
+              <TouchableOpacity style={styles.fullButton}>
+                <Text style={styles.basket}>{items}</Text>
+                <Text style={styles.footerText}>View Basket</Text>
+                <Text style={styles.basketTotal}>${total}</Text>
+              </TouchableOpacity>
+            </Link>
+          </SafeAreaView>
+        </View>
+      )}
     </>
   );
 };
@@ -308,6 +327,43 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 20,
     paddingBottom: 4,
+  },
+  footer: {
+    position: "absolute",
+    backgroundColor: "#fff",
+    bottom: 0,
+    left: 0,
+    width: "100%",
+    padding: 10,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: -10,
+    },
+  },
+  fullButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    flex: 1,
+    height: 50,
+  },
+  footerText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  basket: {
+    color: "#fff",
+    backgroundColor: "#19AA86",
+    padding: 8,
+    fontWeight: "bold",
+    borderRadius: 2,
+  },
+  basketTotal: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
 
